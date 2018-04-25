@@ -479,6 +479,17 @@ class Request
             throw new Exception($error);
         }
 
+        // mewlabs fix for determine and cut proxy headers
+        $proxyConnection = "HTTP/1.0 200 Connection established\n\r\n\r";
+//        var_dump($info['url'], self::$proxy['address'], $info['header_size'], strpos($response, $proxyConnection),
+//            "Content-Length: {$info['size_download']}", strpos($response, "Content-Length: {$info['size_download']}"));
+        if (self::$proxy['address'] &&
+            strpos($response, $proxyConnection) < $info['header_size'] &&
+            strpos($response, "Content-Length: {$info['size_download']}") > $info['header_size']
+        ) {
+            $info['header_size'] += strlen($proxyConnection);
+        }
+
         // Split the full response in its headers and body
         $header_size = $info['header_size'];
         $header      = substr($response, 0, $header_size);
